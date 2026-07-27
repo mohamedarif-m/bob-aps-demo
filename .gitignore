@@ -1,0 +1,9 @@
+node_modules/
+.env
+.bob/mcp.json
+.bob/*.log
+.bob/violations.log
+coverage/
+dist/
+backend.log
+frontend.log
