@@ -1,0 +1,8 @@
+{
+  "project": { "name": "APS Grid Operations Dashboard", "client": "Arizona Public Service", "description": "Electric utility operations dashboard built with Bob AI Developer" },
+  "github": {
+    "polling": { "enabled": true, "interval": 300000, "repository": "mohamedarif-m/bob-aps-demo", "labels": ["bob","ai-task","enhancement","bug"], "ignoreLabels": ["wontfix","duplicate","on-hold","invalid"] },
+    "workflow": { "branchPrefix": "bob/", "prTitlePrefix": "[Bob]", "autoMerge": false, "runTests": true, "requireApproval": true }
+  },
+  "rules": { "file": ".bob/rules.xml", "enforcement": "strict" }
+}

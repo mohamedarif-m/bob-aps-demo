@@ -1,0 +1,39 @@
+name: Bob Issue Notifier — APS Demo
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+  issues:
+    types: [opened, labeled]
+jobs:
+  notify-bob:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Scan issues
+        id: scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ISSUES=$(gh issue list --state open --json number,title,labels,url --jq 'map(select(.labels | map(.name) | any(. == "bob" or . == "ai-task" or . == "enhancement" or . == "bug")))')
+          COUNT=$(echo "$ISSUES" | jq 'length')
+          echo "issue_count=$COUNT" >> $GITHUB_OUTPUT
+          echo "$ISSUES" > /tmp/bob_issues.json
+      - name: Notify
+        if: steps.scan.outputs.issue_count > 0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat /tmp/bob_issues.json | jq -c '.[]' | while read -r issue; do
+            NUM=$(echo "$issue" | jq -r '.number')
+            EXISTING=$(gh issue view $NUM --json comments --jq '.comments[] | select(.author.login == "github-actions[bot]" and (.body | contains("🤖 Bob Notifier")))')
+            if [ -z "$EXISTING" ]; then
+              gh issue comment $NUM --body "🤖 **Bob Notifier — APS Demo**
+
+Detected by Bob's automated monitoring.
+**Labels:** $(echo "$issue" | jq -r '[.labels[].name] | join(", ")')
+**Tell Bob:** \`Work on GitHub issue #$NUM\`
+*Bob AI Developer*"
+            fi
+          done
+# Made with Bob

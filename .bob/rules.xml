@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bob-rules version="1.0">
+  <metadata>
+    <name>APS Grid Operations — Development Rules</name>
+    <version>1.0.0</version>
+    <owner>APS Engineering Team</owner>
+  </metadata>
+  <security-rules>
+    <rule id="SEC-001" severity="critical" enabled="true"><name>No Hardcoded Credentials</name><violation-action>block</violation-action><message>❌ BLOCKED: Use environment variables instead of hardcoded credentials.</message></rule>
+    <rule id="SEC-002" severity="high" enabled="true"><name>No Direct Grid Control Commands</name><violation-action>block</violation-action><message>❌ BLOCKED: Grid control is read-only in this dashboard.</message></rule>
+  </security-rules>
+  <data-rules>
+    <rule id="DAT-001" severity="critical" enabled="true"><name>Mock Data Only</name><violation-action>block</violation-action><message>❌ BLOCKED: Demo must use mock data only.</message></rule>
+    <rule id="DAT-002" severity="high" enabled="true"><name>No Customer PII</name><violation-action>block</violation-action><message>❌ BLOCKED: No real customer PII allowed.</message></rule>
+  </data-rules>
+  <business-rules>
+    <rule id="BUS-001" severity="critical" enabled="true"><name>Routes Must Use Service Layer</name><violation-action>block</violation-action><message>❌ BLOCKED: Routes must call apsService — no inline business logic.</message></rule>
+    <rule id="BUS-002" severity="high" enabled="true"><name>CLIENT_NAME Must Be Configurable</name><violation-action>block</violation-action><message>❌ BLOCKED: Use process.env.CLIENT_NAME — never hard-code the client name.</message></rule>
+  </business-rules>
+  <deployment-rules>
+    <rule id="DEP-001" severity="critical" enabled="true"><name>No Direct Commits to Main</name><violation-action>block</violation-action><message>❌ BLOCKED: Create a bob/ branch and open a PR.</message></rule>
+    <rule id="DEP-002" severity="high" enabled="true"><name>CI Must Pass Before Merge</name><violation-action>block</violation-action><message>❌ BLOCKED: Fix failing tests before merging.</message></rule>
+  </deployment-rules>
+  <enforcement><mode>strict</mode><notify-on-violation>true</notify-on-violation><violation-log>.bob/violations.log</violation-log></enforcement>
+</bob-rules>
+<!-- Made with Bob -->

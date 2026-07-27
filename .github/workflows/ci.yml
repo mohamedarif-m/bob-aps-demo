@@ -1,0 +1,44 @@
+name: CI — APS Demo
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+jobs:
+  test:
+    name: Test (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - if: matrix.node-version == '20.x'
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/coverage-final.json
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+          cache: npm
+      - run: npm ci
+      - name: Check for hardcoded secrets
+        run: |
+          if grep -rn --include="*.js" --include="*.jsx" -E "(password|api_key|secret|token)\s*=\s*['\"][^'\"]{8,}['\"]" backend/ frontend/src/ --exclude-dir=node_modules 2>/dev/null; then
+            echo "❌ Hardcoded credentials found!" && exit 1
+          fi
+          echo "✅ Clean"
+      - name: Validate rules.xml
+        run: test -f .bob/rules.xml && echo "✅ rules.xml present" || (echo "❌ Missing" && exit 1)
+# Made with Bob

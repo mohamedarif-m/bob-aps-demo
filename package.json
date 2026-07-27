@@ -1,0 +1,34 @@
+{
+  "name": "aps-demo",
+  "version": "1.0.0",
+  "description": "APS Grid Operations Dashboard demo for Arizona Public Service",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "poll": "node .bob/poller.js",
+    "poll:background": "node .bob/poller.js > .bob/polling.log 2>&1 &",
+    "auto-executor": "node .bob/auto-executor.js",
+    "demo": "./start-demo.sh"
+  },
+  "keywords": ["aps", "electric-utility", "dashboard", "demo", "bob-ai"],
+  "author": "Bob AI Developer",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "nodemon": "^2.0.22",
+    "supertest": "^6.3.3"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": ["/node_modules/"],
+    "testMatch": ["**/tests/**/*.test.js"]
+  }
+}
