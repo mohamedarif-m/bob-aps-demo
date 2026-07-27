@@ -15,7 +15,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ISSUES=$(gh issue list --state open --json number,title,labels,url --jq 'map(select(.labels | map(.name) | any(. == "bob" or . == "ai-task" or . == "enhancement" or . == "bug")))')
+          ISSUES=$(gh issue list --state open --json number,title,labels,url \
+            --jq 'map(select(.labels | map(.name) | any(. == "bob" or . == "ai-task" or . == "enhancement" or . == "bug")))')
           COUNT=$(echo "$ISSUES" | jq 'length')
           echo "issue_count=$COUNT" >> $GITHUB_OUTPUT
           echo "$ISSUES" > /tmp/bob_issues.json
@@ -26,14 +27,17 @@ jobs:
         run: |
           cat /tmp/bob_issues.json | jq -c '.[]' | while read -r issue; do
             NUM=$(echo "$issue" | jq -r '.number')
-            EXISTING=$(gh issue view $NUM --json comments --jq '.comments[] | select(.author.login == "github-actions[bot]" and (.body | contains("🤖 Bob Notifier")))')
+            EXISTING=$(gh issue view $NUM --json comments \
+              --jq '.comments[] | select(.author.login == "github-actions[bot]" and (.body | contains("Bob Notifier")))')
             if [ -z "$EXISTING" ]; then
-              gh issue comment $NUM --body "🤖 **Bob Notifier — APS Demo**
+              LABELS=$(echo "$issue" | jq -r '[.labels[].name] | join(", ")')
+              BODY="🤖 **Bob Notifier — APS Demo**
 
 Detected by Bob's automated monitoring.
-**Labels:** $(echo "$issue" | jq -r '[.labels[].name] | join(", ")')
+**Labels:** $LABELS
 **Tell Bob:** \`Work on GitHub issue #$NUM\`
 *Bob AI Developer*"
+              gh issue comment $NUM --body "$BODY"
             fi
           done
 # Made with Bob
