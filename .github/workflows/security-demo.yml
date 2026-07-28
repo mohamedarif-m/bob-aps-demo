@@ -1,0 +1,75 @@
+name: CI — APS Security Demo
+
+on:
+  push:
+    branches: ['demo/security', 'bob/fix-cve-*']
+  pull_request:
+    branches: ['demo/security']
+
+jobs:
+  test:
+    name: Test (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: security-demo/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: security-demo
+      - name: Run tests
+        run: npm test
+        working-directory: security-demo
+
+  security:
+    name: "\U0001F510 Dependency Vulnerability Scan"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+          cache: npm
+          cache-dependency-path: security-demo/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: security-demo
+      - name: Run npm audit (HIGH+)
+        run: |
+          echo "\U0001F50D Scanning for HIGH and CRITICAL vulnerabilities..."
+          npm audit --audit-level=high --json | tee audit-report.json
+          npm audit --audit-level=high
+        working-directory: security-demo
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: npm-audit-report
+          path: security-demo/audit-report.json
+
+  lint:
+    name: "\U0001F512 Secrets Scan (Bob SEC-001)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check for hardcoded secrets
+        run: |
+          echo "\U0001F50D Scanning for hardcoded credentials (Bob SEC-001)..."
+          if grep -rn --include="*.js" \
+            -E "(password|api[_-]?key|secret|token)\s*=\s*['\"][^'\"]{8,}['\"]" \
+            security-demo/src/ 2>/dev/null; then
+            echo ""
+            echo "\u274C BOB GOVERNANCE BLOCK \u2014 SEC-001: Hardcoded credentials detected!"
+            echo "   Rule: No Hardcoded Credentials (severity: critical)"
+            echo "   Fix:  Use process.env.VARIABLE_NAME instead."
+            exit 1
+          fi
+          echo "\u2705 No hardcoded credentials detected"
+
+# Made with Bob

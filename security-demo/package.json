@@ -1,0 +1,28 @@
+{
+  "name": "aps-security-demo",
+  "version": "1.0.0",
+  "description": "APS shift-left security demo — CVE analysis with Bob AI Developer",
+  "private": true,
+  "scripts": {
+    "audit": "npm audit",
+    "audit:json": "npm audit --json",
+    "audit:fix": "npm audit fix",
+    "start": "node src/index.js",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "semver": "7.3.4"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "supertest": "^6.3.3"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/tests/**/*.test.js"]
+  }
+}
