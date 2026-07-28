@@ -1,26 +1,126 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bob-rules version="1.0">
+
   <metadata>
     <name>APS Grid Operations — Development Rules</name>
     <version>1.0.0</version>
     <owner>APS Engineering Team</owner>
   </metadata>
+
+  <!-- ══════════════════════════════════════════ SECURITY -->
   <security-rules>
-    <rule id="SEC-001" severity="critical" enabled="true"><name>No Hardcoded Credentials</name><violation-action>block</violation-action><message>❌ BLOCKED: Use environment variables instead of hardcoded credentials.</message></rule>
-    <rule id="SEC-002" severity="high" enabled="true"><name>No Direct Grid Control Commands</name><violation-action>block</violation-action><message>❌ BLOCKED: Grid control is read-only in this dashboard.</message></rule>
+
+    <rule id="SEC-001" severity="critical" enabled="true">
+      <name>No Hardcoded Credentials</name>
+      <description>Never commit passwords, tokens, API keys, or secrets in source code</description>
+      <violation-action>block</violation-action>
+      <patterns>
+        <pattern type="regex">api[_-]?key\s*=\s*["'][^"']{8,}["']</pattern>
+        <pattern type="regex">password\s*=\s*["'][^"']+["']</pattern>
+        <pattern type="regex">secret\s*=\s*["'][^"']+["']</pattern>
+        <pattern type="regex">token\s*=\s*["'][^"']+["']</pattern>
+      </patterns>
+      <message>❌ BLOCKED: Hardcoded credential detected. Move to process.env.VARIABLE_NAME.</message>
+    </rule>
+
+    <rule id="SEC-002" severity="high" enabled="true">
+      <name>No Direct Grid Control Commands</name>
+      <description>APS grid control operations must never be triggered from the dashboard API</description>
+      <violation-action>block</violation-action>
+      <message>❌ BLOCKED: Grid control is read-only in this dashboard.</message>
+    </rule>
+
   </security-rules>
+
+  <!-- ══════════════════════════════════════════ DATA -->
   <data-rules>
-    <rule id="DAT-001" severity="critical" enabled="true"><name>Mock Data Only</name><violation-action>block</violation-action><message>❌ BLOCKED: Demo must use mock data only.</message></rule>
-    <rule id="DAT-002" severity="high" enabled="true"><name>No Customer PII</name><violation-action>block</violation-action><message>❌ BLOCKED: No real customer PII allowed.</message></rule>
+
+    <rule id="DAT-001" severity="critical" enabled="true">
+      <name>Mock Data Only</name>
+      <description>This is a demo — never connect to real APS operational systems or SCADA</description>
+      <violation-action>block</violation-action>
+      <message>❌ BLOCKED: Demo must use mock data only. No real APS grid or customer data.</message>
+    </rule>
+
+    <rule id="DAT-002" severity="high" enabled="true">
+      <name>No Customer PII</name>
+      <description>Do not include real customer names, addresses, account numbers, or meter IDs</description>
+      <violation-action>block</violation-action>
+      <message>❌ BLOCKED: No real customer PII allowed. Use anonymized or synthetic data.</message>
+    </rule>
+
   </data-rules>
+
+  <!-- ══════════════════════════════════════════ BUSINESS -->
   <business-rules>
-    <rule id="BUS-001" severity="critical" enabled="true"><name>Routes Must Use Service Layer</name><violation-action>block</violation-action><message>❌ BLOCKED: Routes must call apsService — no inline business logic.</message></rule>
-    <rule id="BUS-002" severity="high" enabled="true"><name>CLIENT_NAME Must Be Configurable</name><violation-action>block</violation-action><message>❌ BLOCKED: Use process.env.CLIENT_NAME — never hard-code the client name.</message></rule>
+
+    <rule id="BUS-001" severity="critical" enabled="true">
+      <name>Routes Must Use Service Layer</name>
+      <description>Route handlers must call the service layer — no inline business logic</description>
+      <violation-action>block</violation-action>
+      <message>❌ BLOCKED: Routes must call apsService — no inline business logic.</message>
+    </rule>
+
+    <rule id="BUS-002" severity="high" enabled="true">
+      <name>CLIENT_NAME Must Be Configurable</name>
+      <description>Client display name must always come from process.env.CLIENT_NAME</description>
+      <violation-action>block</violation-action>
+      <message>❌ BLOCKED: Use process.env.CLIENT_NAME — never hard-code the client name.</message>
+    </rule>
+
   </business-rules>
+
+  <!-- ══════════════════════════════════════════ DEPLOYMENT -->
   <deployment-rules>
-    <rule id="DEP-001" severity="critical" enabled="true"><name>No Direct Commits to Main</name><violation-action>block</violation-action><message>❌ BLOCKED: Create a bob/ branch and open a PR.</message></rule>
-    <rule id="DEP-002" severity="high" enabled="true"><name>CI Must Pass Before Merge</name><violation-action>block</violation-action><message>❌ BLOCKED: Fix failing tests before merging.</message></rule>
+
+    <rule id="DEP-001" severity="critical" enabled="true">
+      <name>No Direct Commits to Main</name>
+      <description>All changes go through a PR — main branch is protected</description>
+      <violation-action>block</violation-action>
+      <requires>
+        <pull-request>true</pull-request>
+        <branch-prefix>bob/</branch-prefix>
+      </requires>
+      <message>❌ BLOCKED: Create a bob/ branch and open a PR. No direct commits to main.</message>
+    </rule>
+
+    <rule id="DEP-002" severity="high" enabled="true">
+      <name>CI Must Pass Before Merge</name>
+      <description>All tests and checks must be green before a PR can be merged</description>
+      <violation-action>block</violation-action>
+      <message>❌ BLOCKED: Fix failing CI checks before merging. Run: npm test</message>
+    </rule>
+
+    <rule id="DEP-003" severity="high" enabled="true">
+      <name>No Known HIGH or CRITICAL Vulnerabilities in Dependencies</name>
+      <description>
+        npm audit must report zero HIGH or CRITICAL severity CVEs before a PR is merged.
+        Bob checks this rule before proposing any dependency change and will surface
+        any existing vulnerabilities found by: npm audit --audit-level=high
+      </description>
+      <violation-action>block</violation-action>
+      <check-command>npm audit --audit-level=high</check-command>
+      <remediation>
+        1. Run: npm audit --audit-level=high
+        2. Identify the vulnerable package and the patched version
+        3. Update the version in package.json
+        4. Run: npm install and npm test
+        5. Confirm: npm audit exits 0
+      </remediation>
+      <message>❌ BLOCKED: HIGH/CRITICAL CVEs detected in dependencies.
+  Run `npm audit --audit-level=high` to see affected packages.
+  Fix all HIGH+ vulnerabilities before this PR can merge.
+  Ref: https://docs.npmjs.com/cli/v9/commands/npm-audit</message>
+    </rule>
+
   </deployment-rules>
-  <enforcement><mode>strict</mode><notify-on-violation>true</notify-on-violation><violation-log>.bob/violations.log</violation-log></enforcement>
+
+  <!-- ══════════════════════════════════════════ ENFORCEMENT -->
+  <enforcement>
+    <mode>strict</mode>
+    <notify-on-violation>true</notify-on-violation>
+    <violation-log>.bob/violations.log</violation-log>
+  </enforcement>
+
 </bob-rules>
 <!-- Made with Bob -->
