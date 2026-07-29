@@ -59,6 +59,8 @@
   transition: background 0.2s;
 }
 .btn-refresh:hover { background: var(--aps-orange-dark); }
+
+/* KPI Section */
 .kpi-section { margin-bottom: 2rem; }
 .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
 .kpi-card { background: white; border-radius: 12px; padding: 1.5rem; text-align: center; border-top: 4px solid transparent; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform 0.2s; }
@@ -67,6 +69,30 @@
 .kpi-icon { font-size: 1.75rem; margin-bottom: 0.5rem; }
 .kpi-value { font-size: 2rem; font-weight: 700; color: var(--text-primary); line-height: 1; margin-bottom: 0.4rem; }
 .kpi-label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+
+/* Renewable SVG ring */
+.renewable-ring-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.4rem;
+}
+.ring-track {
+  stroke: #D1FAE5;
+}
+.ring-fill {
+  stroke: #10B981;
+  transition: stroke-dashoffset 0.8s ease;
+}
+.ring-label {
+  position: absolute;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Sections */
 .section { margin-bottom: 2rem; }
 .section-title { font-size: 1.1rem; font-weight: 700; color: white; margin-bottom: 1rem; }
 .regions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
