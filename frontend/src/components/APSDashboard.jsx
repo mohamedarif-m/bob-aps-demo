@@ -1,6 +1,33 @@
 import { useState, useEffect } from 'react';
 import './APSDashboard.css';
 
+const RenewableRing = ({ percent }) => {
+  const radius = 28;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (percent / 100) * circumference;
+  return (
+    <div className="renewable-ring-wrap">
+      <svg width="72" height="72" viewBox="0 0 72 72">
+        <circle
+          className="ring-track"
+          cx="36" cy="36" r={radius}
+          fill="none" strokeWidth="6"
+        />
+        <circle
+          className="ring-fill"
+          cx="36" cy="36" r={radius}
+          fill="none" strokeWidth="6"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          transform="rotate(-90 36 36)"
+        />
+      </svg>
+      <span className="ring-label">{percent}%</span>
+    </div>
+  );
+};
+
 const APSDashboard = ({ clientName, apiBase }) => {
   const [stats, setStats] = useState(null);
   const [regions, setRegions] = useState([]);
@@ -108,8 +135,7 @@ const APSDashboard = ({ clientName, apiBase }) => {
               <div className="kpi-label">Grid Capacity</div>
             </div>
             <div className="kpi-card kpi-green">
-              <div className="kpi-icon">🌿</div>
-              <div className="kpi-value">{stats.renewableMixPercent}%</div>
+              <RenewableRing percent={stats.renewableMixPercent} />
               <div className="kpi-label">Renewable Mix</div>
             </div>
           </div>
