@@ -36,6 +36,7 @@ const APSDashboard = ({ clientName, apiBase }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastFetched, setLastFetched] = useState(null);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -61,6 +62,7 @@ const APSDashboard = ({ clientName, apiBase }) => {
       setRegions(regionsData.data || []);
       setAlerts(alertsData.data || []);
       setLastFetched(new Date());
+      setBannerDismissed(false);
     } catch (err) {
       setError('Unable to load dashboard data: ' + err.message);
     } finally {
@@ -89,8 +91,28 @@ const APSDashboard = ({ clientName, apiBase }) => {
     );
   }
 
+  const showBanner = stats && stats.activeOutages > 0 && !bannerDismissed;
+
   return (
     <div className="aps-dashboard">
+
+      {/* Critical outage banner */}
+      {showBanner && (
+        <div
+          className="outage-banner"
+          role="alert"
+          aria-live="assertive"
+        >
+          <span className="outage-banner-msg">
+            ⚡ <strong>{stats.activeOutages} active {stats.activeOutages === 1 ? 'outage' : 'outages'} detected</strong> — immediate attention required
+          </span>
+          <button
+            className="outage-banner-close"
+            onClick={() => setBannerDismissed(true)}
+            aria-label="Dismiss alert"
+          >✕</button>
+        </div>
+      )}
 
       {/* Dashboard header row */}
       <div className="dash-header">
